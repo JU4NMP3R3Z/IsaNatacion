@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swim Performance App Pro - Panel Deportivo</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --accent: #38bdf8;
+            --accent-green: #34d399;
+            --accent-orange: #fb923c;
+            --accent-purple: #c084fc;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --border: #334155;
+            --danger: #ef4444;
+            --gold: #facc15;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            width: 100vw;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        /* SISTEMA DE PESTAÑAS (TABS) */
+        .tabs-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 12px;
+        }
+
+        .tab-button {
+            background-color: var(--card);
+            color: var(--muted);
+            border: 2px solid var(--border);
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            width: auto;
+        }
+
+        .tab-button:hover {
+            color: var(--text);
+            border-color: var(--accent);
+        }
+
+        .tab-button.active-comp {
+            background-color: #0284c7;
+            color: #ffffff;
+            border-color: var(--accent);
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+        }
+
+        .tab-button.active-entreno {
+            background-color: #7e22ce;
+            color: #ffffff;
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 12px rgba(192, 132, 252, 0.4);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ESTILOS DE TARJETAS Y GRID */
+        .card {
+            background-color: var(--card);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            box-sizing: border-box;
+        }
+
+        .card-comp {
+            border-top: 4px solid var(--accent);
+        }
+
+        .card-entreno {
+            border-top: 4px solid var(--accent-purple);
+        }
+
+        .top-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .top-grid { grid-template-columns: 1fr; }
+        }
+
+        .multi-column-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
+            margin-top: 10px;
+        }
+
+        .item-card {
+            background-color: #0f172a;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .col {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background-color: #0f172a;
+            color: var(--text);
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+
+        .time-box {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .time-box input {
+            text-align: center;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--accent);
+            color: #0f172a;
+            font-weight: bold;
+            font-size: 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover { opacity: 0.9; }
+
+        .btn-purple { background-color: var(--accent-purple); color: #0f172a; }
+
+        .btn-small {
+            padding: 6px 10px;
+            font-size: 12px;
+            font-weight: normal;
+            border-radius: 6px;
+            width: auto;
+        }
+
+        .btn-sync { background-color: var(--accent-green); color: #0f172a; }
+        .btn-import { background-color: #64748b; color: white; }
+        .btn-pdf { background-color: #e11d48; color: white; }
+
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+            padding: 4px 8px;
+            width: auto;
+            font-size: 12px;
+        }
+
+        .btn-edit {
+            background-color: var(--accent-orange);
+            color: white;
+            padding: 4px 8px;
+            width: auto;
+            font-size: 12px;
+            margin-right: 4px;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 12px;
+            display: inline-block;
+            line-height: 1.3;
+        }
+
+        .badge-gold { background-color: var(--gold); color: #0f172a; }
+        .badge-green { background-color: var(--accent-green); color: #0f172a; }
+        .badge-red { background-color: #f87171; color: #0f172a; }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+            width: 100%;
+        }
+
+        .img-reminder {
+            width: 100%;
+            max-width: 100%;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-top: 10px;
+        }
+
+        details summary {
+            cursor: pointer;
+            color: var(--accent);
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        .month-group {
+            background: #0f172a;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-top: 10px;
+            padding: 10px 14px;
+        }
+
+        .month-group summary {
+            color: var(--accent-green);
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .backup-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            padding: 12px 18px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .stats-summary {
+            display: flex;
+            gap: 15px;
+            justify-content: space-around;
+            background: #0f172a;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .stats-val {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--accent-green);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🏊‍♀️ Swim Tracker Pro - Panel Deportivo</h1>
+
+    <!-- BARRA GLOBAL DE DATOS Y EXPORTACIÓN -->
+    <div class="backup-bar">
+        <span style="font-size: 14px; color: var(--muted); font-weight: bold;">☁️ Gestión Global de Datos y Reportes:</span>
+        <div style="display:flex; gap:8px;">
+            <button class="btn-small btn-sync" onclick="exportarDatos()">📥 Exportar Todo</button>
+            <input type="file" id="importFile" style="display:none;" onchange="importarDatos(event)">
+            <button class="btn-small btn-import" onclick="document.getElementById('importFile').click()">📤 Importar Datos</button>
+            <button class="btn-small btn-pdf" onclick="descargarInformePDF()">📄 Exportar Informe PDF</button>
+        </div>
+    </div>
+
+    <!-- PESTAÑAS PRINCIPALES -->
+    <div class="tabs-container">
+        <button id="btnTabComp" class="tab-button active-comp" onclick="cambiarTab('competencia')">🏆 MÓDULO COMPETENCIA</button>
+        <button id="btnTabEntreno" class="tab-button" onclick="cambiarTab('entrenamiento')">💪 MÓDULO ENTRENAMIENTO</button>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MÓDULO 1: COMPETENCIA                      -->
+    <!-- ========================================== -->
+    <div id="tabCompetencia" class="tab-content active">
+        
+        <div class="top-grid">
+            <!-- CARGA DE TIEMPOS -->
+            <div class="card card-comp">
+                <h2 id="formTitle">Cargar Nuevo Tiempo de Competencia</h2>
+                <input type="hidden" id="editId">
+                
+                <div class="row">
+                    <div class="col">
+                        <label>Fecha</label>
+                        <input type="date" id="fecha">
+                    </div>
+                    <div class="col">
+                        <label>Torneo / Evento</label>
+                        <input type="text" id="torneo" placeholder="Ej: Torneo Apertura">
+                    </div>
+                    <div class="col">
+                        <label>Categoría Competida</label>
+                        <select id="categoria">
+                            <option value="infantil1">Infantil 1ª</option>
+                            <option value="infantil2">Infantil 2ª</option>
+                            <option value="menor1">Menor 1ª</option>
+                            <option value="menor2">Menor 2ª</option>
+                            <option value="cadete1">Cadete 1ª</option>
+                            <option value="cadete2">Cadete 2ª</option>
+                            <option value="juvenil1">Juvenil 1ª</option>
+                            <option value="juvenil2">Juvenil 2ª</option>
+                            <option value="junior">Junior</option>
+                            <option value="mayores">Mayores</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <label>Estilo</label>
+                        <select id="estilo">
+                            <option value="LIBRE">Libre</option>
+                            <option value="ESPALDA">Espalda</option>
+                            <option value="PECHO">Pecho</option>
+                            <option value="MARIPOSA">Mariposa</option>
+                            <option value="MEDLEY">Medley / Combinado</option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label>Distancia (m)</label>
+                        <select id="distancia">
+                            <option value="50">50m</option>
+                            <option value="100">100m</option>
+                            <option value="200">200m</option>
+                            <option value="400">400m</option>
+                            <option value="800">800m</option>
+                            <option value="1500">1500m</option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label>Tipo de Pileta</label>
+                        <select id="pileta">
+                            <option value="25m">25 metros (Corta)</option>
+                            <option value="50m">50 metros (Olímpica)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <label>Tiempo Exacto (Minutos : Segundos . Centésimas)</label>
+                <div class="row">
+                    <div class="col time-box">
+                        <input type="number" id="minutos" placeholder="Min" min="0" value="0">:
+                        <input type="number" id="segundos" placeholder="Seg" min="0" max="59" value="0">.
+                        <input type="number" id="centesimas" placeholder="CS" min="0" max="99" value="0">
+                    </div>
+                </div>
+
+                <button id="btnGuardar" onclick="guardarRegistro()" style="margin-top: 10px;">Guardar Tiempo</button>
+            </div>
+
+            <!-- TABLA DE MARCAS MINIMAS RECORDATORIO -->
+            <div class="card card-comp">
+                <details open>
+                    <summary>📸 Tabla de Marcas Mínimas (Recordatorio)</summary>
+                    <input type="file" id="imgUploader" accept="image/*" onchange="cargarImagenRecordatorio(event)" style="margin-top: 10px;">
+                    <div id="contenedorImagen" style="margin-top: 10px; text-align: center;"></div>
+                </details>
+            </div>
+        </div>
+
+        <!-- GRAFICO Y PROYECCION -->
+        <div class="card card-comp">
+            <h2>📊 Comparativa y Proyecciones por Tipo de Pileta (Competencias)</h2>
+            <div class="row">
+                <div class="col">
+                    <label>Seleccionar Prueba</label>
+                    <select id="filtroPruebaChart" onchange="actualizarGrafico()"></select>
+                </div>
+                <div class="col">
+                    <label>Tipo de Pileta</label>
+                    <select id="filtroPiletaChart" onchange="actualizarGrafico()">
+                        <option value="TODAS">Todas las piletas</option>
+                        <option value="25m">Solo Pileta 25m (Corta)</option>
+                        <option value="50m">Solo Pileta 50m (Olímpica)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="timeChart"></canvas>
+            </div>
+            <div id="proyeccionBox" style="margin-top: 15px; text-align: center; font-weight: bold; color: var(--accent-green); font-size: 16px;"></div>
+        </div>
+
+        <!-- MARCAS ALCANZADAS -->
+        <div class="card card-comp">
+            <h2>🏆 Marcas Alcanzadas (Mejor Marca por Prueba)</h2>
+            <div id="gridMarcasAlcanzadas" class="multi-column-grid"></div>
+        </div>
+
+        <!-- HISTORIAL DE COMPETENCIA -->
+        <div class="card card-comp">
+            <h2>📋 Historial Completo de Tiempos Cargados</h2>
+            <div id="gridHistorial" class="multi-column-grid"></div>
+        </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MÓDULO 2: ENTRENAMIENTO                     -->
+    <!-- ========================================== -->
+    <div id="tabEntrenamiento" class="tab-content">
+        
+        <!-- VOLUMEN DE TRABAJO DIARIO -->
+        <div class="card card-entreno">
+            <h2 style="color: var(--accent-purple);">🏊‍♂️ Cargar Volumen Total de Trabajo Diario</h2>
+            <div class="row">
+                <div class="col">
+                    <label>Fecha del Entrenamiento</label>
+                    <input type="date" id="volFecha">
+                </div>
+                <div class="col">
+                    <label>Volumen Total (Metros)</label>
+                    <input type="number" id="volMetros" placeholder="Ej: 3500" min="0">
+                </div>
+                <div class="col">
+                    <label>Observaciones / Enfoque</label>
+                    <input type="text" id="volObs" placeholder="Ej: Aeróbico / Resistencia">
+                </div>
+            </div>
+            <button class="btn-purple" onclick="guardarVolumenDiario()">Cargar Volumen Diario</button>
+
+            <h3 style="color: var(--accent-green); text-align:center; margin-top: 20px;">🗓️ Resumen Semanal de Entrenamiento</h3>
+            <div class="stats-summary" id="resumenSemanalBox">
+                <div>
+                    <small>Metros esta Semana</small>
+                    <div class="stats-val" id="totalMetrosSemana">0 m</div>
+                </div>
+                <div>
+                    <small>Sesiones Registradas</small>
+                    <div class="stats-val" id="sesionesSemana">0</div>
+                </div>
+                <div>
+                    <small>Promedio Diario</small>
+                    <div class="stats-val" id="promedioSemana">0 m</div>
+                </div>
+            </div>
+
+            <h3 style="color: var(--accent); text-align:center; margin-top: 25px;">📅 Historial de Volumen Agrupado por Mes</h3>
+            <div id="contenedorVolumenMensual"></div>
+        </div>
+
+        <!-- EVALUACIONES Y CONTROL -->
+        <div class="card card-entreno">
+            <h2 style="color: var(--accent-purple);">⏱️ Carga de Evaluación de Trabajo (Test de Control)</h2>
+            <div class="row">
+                <div class="col">
+                    <label>Fecha Evaluación</label>
+                    <input type="date" id="evalFecha">
+                </div>
+                <div class="col">
+                    <label>Prueba / Test</label>
+                    <input type="text" id="evalPrueba" placeholder="Ej: Test 100m Libre / T-30">
+                </div>
+                <div class="col">
+                    <label>Distancia del Test (m)</label>
+                    <input type="number" id="evalMetros" placeholder="Ej: 100">
+                </div>
+                <div class="col">
+                    <label>Tipo de Pileta</label>
+                    <select id="evalPileta">
+                        <option value="25m">25m Corta</option>
+                        <option value="50m">50m Olímpica</option>
+                    </select>
+                </div>
+            </div>
+            <label>Tiempo Obtenido (Minutos : Segundos . Centésimas)</label>
+            <div class="row">
+                <div class="col time-box">
+                    <input type="number" id="evalMin" placeholder="Min" min="0" value="0">:
+                    <input type="number" id="evalSeg" placeholder="Seg" min="0" max="59" value="0">.
+                    <input type="number" id="evalCs" placeholder="CS" min="0" max="99" value="0">
+                </div>
+            </div>
+            <button class="btn-purple" onclick="guardarEvaluacion()">Cargar Evaluación de Trabajo</button>
+
+            <h3 style="color: var(--accent-purple); text-align:center; margin-top: 25px;">📉 Gráfico Comparativo de Tiempos de Evaluación por Fechas</h3>
+            <div class="row">
+                <div class="col">
+                    <label>Filtrar Test / Prueba</label>
+                    <select id="filtroEvalChart" onchange="actualizarGraficoEvaluaciones()"></select>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="evalChart"></canvas>
+            </div>
+            <div id="gridEvalHistorial" class="multi-column-grid" style="margin-top: 15px;"></div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    const MARCAS_DAMAS = {
+        "LIBRE_50":    { infantil1: 38.51, infantil2: 36.00, menor1: 34.00, menor2: 31.44, cadete1: 30.41, cadete2: 30.21, juvenil1: 29.55, juvenil2: 29.33, junior: 29.33, mayores: 29.00 },
+        "LIBRE_100":   { infantil1: 90.00, infantil2: 80.00, menor1: 73.00, menor2: 68.19, cadete1: 66.34, cadete2: 65.44, juvenil1: 65.21, juvenil2: 65.18, junior: 65.18, mayores: 63.00 },
+        "LIBRE_200":   { infantil1: 196.00, infantil2: 182.00, menor1: 159.00, menor2: 153.65, cadete1: 146.09, cadete2: 144.63, juvenil1: 143.03, juvenil2: 141.20, junior: 141.20, mayores: 139.00 },
+        "LIBRE_400":   { infantil1: 370.00, infantil2: 352.00, menor1: 349.41, menor2: 329.84, cadete1: 304.98, cadete2: 299.28, juvenil1: 297.00, juvenil2: 291.97, junior: 291.97, mayores: 287.00 },
+        "LIBRE_800":   { menor1: 700.00, menor2: 669.19, cadete1: 645.51, cadete2: 621.43, juvenil1: 617.00, juvenil2: 610.00, junior: 610.00, mayores: 600.00 },
+        "LIBRE_1500":  { menor2: 1230.00, cadete1: 1170.00, cadete2: 1170.00, juvenil1: 1165.00, juvenil2: 1155.00, junior: 1155.00, mayores: 1128.00 },
+        
+        "ESPALDA_50":  { infantil1: 46.51, infantil2: 42.22, menor1: 41.00, menor2: 39.00, cadete1: 36.46, cadete2: 35.45, juvenil1: 34.34, juvenil2: 34.09, junior: 34.09, mayores: 33.50 },
+        "ESPALDA_100": { infantil1: 110.00, infantil2: 105.00, menor1: 90.00, menor2: 82.29, cadete1: 78.66, cadete2: 75.75, juvenil1: 74.00, juvenil2: 72.99, junior: 72.99, mayores: 71.26 },
+        "ESPALDA_200": { infantil1: 212.00, infantil2: 202.00, menor1: 195.62, menor2: 172.36, cadete1: 171.73, cadete2: 166.10, juvenil1: 163.00, juvenil2: 159.05, junior: 159.05, mayores: 155.00 },
+        
+        "PECHO_50":    { infantil1: 55.77, infantil2: 52.00, menor1: 47.00, menor2: 42.00, cadete1: 40.96, cadete2: 39.96, juvenil1: 39.67, juvenil2: 39.64, junior: 39.64, mayores: 37.00 },
+        "PECHO_100":   { infantil1: 112.00, infantil2: 106.71, menor1: 97.50, menor2: 94.43, cadete1: 89.18, cadete2: 86.50, juvenil1: 85.00, juvenil2: 85.60, junior: 85.60, mayores: 82.00 },
+        "PECHO_200":   { infantil1: 220.00, infantil2: 215.00, menor1: 213.00, menor2: 206.64, cadete1: 192.49, cadete2: 189.00, juvenil1: 187.00, juvenil2: 185.00, junior: 185.00, mayores: 175.87 },
+        
+        "MARIPOSA_50": { infantil1: 50.02, infantil2: 41.21, menor1: 36.00, menor2: 34.00, cadete1: 32.91, cadete2: 32.55, juvenil1: 31.17, juvenil2: 31.00, junior: 31.00, mayores: 30.50 },
+        "MARIPOSA_100":{ infantil1: 110.00, infantil2: 103.55, menor1: 85.42, menor2: 79.50, cadete1: 78.75, cadete2: 75.71, juvenil1: 75.08, juvenil2: 72.00, junior: 72.00, mayores: 69.00 },
+        "MARIPOSA_200":{ infantil1: 220.00, infantil2: 208.00, menor1: 203.63, menor2: 187.56, cadete1: 185.68, cadete2: 175.00, juvenil1: 170.00, juvenil2: 165.00, junior: 171.50, mayores: 155.31 },
+        
+        "MEDLEY_100":  { mayores: 75.75 },
+        "MEDLEY_200":  { infantil1: 235.00, infantil2: 206.64, menor1: 187.98, menor2: 176.61, cadete1: 170.66, cadete2: 166.36, juvenil1: 165.81, juvenil2: 163.81, junior: 163.81, mayores: 159.18 },
+        "MEDLEY_400":  { infantil1: 405.00, infantil2: 395.00, menor1: 381.27, menor2: 368.78, cadete1: 361.58, cadete2: 358.00, juvenil1: 350.00, juvenil2: 345.00, junior: 345.00, mayores: 335.39 }
+    };
+
+    const NOMBRES_CAT = {
+        infantil1: "Infantil 1ª", infantil2: "Infantil 2ª", menor1: "Menor 1ª", menor2: "Menor 2ª",
+        cadete1: "Cadete 1ª", cadete2: "Cadete 2ª", juvenil1: "Juvenil 1ª", juvenil2: "Juvenil 2ª",
+        junior: "Junior", mayores: "Mayores"
+    };
+
+    const ORDEN_CAT = ["infantil1", "infantil2", "menor1", "menor2", "cadete1", "cadete2", "juvenil1", "juvenil2", "junior", "mayores"];
+
+    let myChart = null;
+    let evalChart = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const hoy = new Date().toISOString().slice(0,10);
+        document.getElementById('fecha').value = hoy;
+        document.getElementById('volFecha').value = hoy;
+        document.getElementById('evalFecha').value = hoy;
+
+        renderizarGridHistorial();
+        renderizarGridMarcasAlcanzadas();
+        actualizarSelectoresChart();
+        actualizarGrafico();
+        mostrarImagenGuardada();
+
+        renderizarVolumenDiario();
+        renderizarEvaluaciones();
+        actualizarSelectoresEvalChart();
+        actualizarGraficoEvaluaciones();
+    });
+
+    function cambiarTab(tab) {
+        const tabComp = document.getElementById('tabCompetencia');
+        const tabEntreno = document.getElementById('tabEntrenamiento');
+        const btnComp = document.getElementById('btnTabComp');
+        const btnEntreno = document.getElementById('btnTabEntreno');
+
+        if (tab === 'competencia') {
+            tabComp.classList.add('active');
+            tabEntreno.classList.remove('active');
+            btnComp.className = 'tab-button active-comp';
+            btnEntreno.className = 'tab-button';
+        } else {
+            tabEntreno.classList.add('active');
+            tabComp.classList.remove('active');
+            btnEntreno.className = 'tab-button active-entreno';
+            btnComp.className = 'tab-button';
+        }
+    }
+
+    function getDatos() { return JSON.parse(localStorage.getItem('swim_damas_records')) || []; }
+    function setDatos(datos) { localStorage.setItem('swim_damas_records', JSON.stringify(datos)); }
+
+    function getVolumenDatos() { return JSON.parse(localStorage.getItem('swim_volumen_records')) || []; }
+    function setVolumenDatos(datos) { localStorage.setItem('swim_volumen_records', JSON.stringify(datos)); }
+
+    function getEvalDatos() { return JSON.parse(localStorage.getItem('swim_eval_records')) || []; }
+    function setEvalDatos(datos) { localStorage.setItem('swim_eval_records', JSON.stringify(datos)); }
+
+    function parseFechaISO(fechaStr) {
+        const partes = fechaStr.split('-');
+        return new Date(partes[0], partes[1] - 1, partes[2]);
+    }
+
+    function guardarRegistro() {
+        const editId = document.getElementById('editId').value;
+        const fecha = document.getElementById('fecha').value;
+        const torneo = document.getElementById('torneo').value || "Entrenamiento";
+        const categoria = document.getElementById('categoria').value;
+        const estilo = document.getElementById('estilo').value;
+        const distancia = document.getElementById('distancia').value;
+        const pileta = document.getElementById('pileta').value;
+        const min = parseInt(document.getElementById('minutos').value) || 0;
+        const seg = parseInt(document.getElementById('segundos').value) || 0;
+        const cs = parseInt(document.getElementById('centesimas').value) || 0;
+
+        const totalSeg = (min * 60) + seg + (cs / 100);
+
+        if (totalSeg <= 0) {
+            alert("Ingresá un tiempo válido.");
+            return;
+        }
+
+        let datos = getDatos();
+
+        if (editId) {
+            datos = datos.map(item => item.id == editId ? { id: Number(editId), fecha, torneo, categoria, estilo, distancia, pileta, min, seg, cs, totalSeg } : item);
+            document.getElementById('editId').value = '';
+            document.getElementById('formTitle').innerText = 'Cargar Nuevo Tiempo de Competencia';
+        } else {
+            datos.push({ id: Date.now(), fecha, torneo, categoria, estilo, distancia, pileta, min, seg, cs, totalSeg });
+        }
+
+        setDatos(datos);
+        limpiarFormulario();
+        renderizarGridHistorial();
+        renderizarGridMarcasAlcanzadas();
+        actualizarSelectoresChart();
+        actualizarGrafico();
+    }
+
+    function limpiarFormulario() {
+        document.getElementById('minutos').value = '0';
+        document.getElementById('segundos').value = '0';
+        document.getElementById('centesimas').value = '0';
+        document.getElementById('torneo').value = '';
+    }
+
+    function guardarVolumenDiario() {
+        const fecha = document.getElementById('volFecha').value;
+        const metros = parseInt(document.getElementById('volMetros').value) || 0;
+        const obs = document.getElementById('volObs').value || 'Sin observaciones';
+
+        if (metros <= 0 || !fecha) {
+            alert("Ingresá una fecha y un volumen de metros válido.");
+            return;
+        }
+
+        let volumenes = getVolumenDatos();
+        volumenes.push({ id: Date.now(), fecha, metros, obs });
+        setVolumenDatos(volumenes);
+
+        document.getElementById('volMetros').value = '';
+        document.getElementById('volObs').value = '';
+
+        renderizarVolumenDiario();
+    }
+
+    function renderizarVolumenDiario() {
+        const datos = getVolumenDatos().sort((a,b) => parseFechaISO(b.fecha) - parseFechaISO(a.fecha));
+        const container = document.getElementById('contenedorVolumenMensual');
+        container.innerHTML = '';
+
+        // CÁLCULO RESUMEN SEMANAL (Últimos 7 días)
+        const hoy = new Date();
+        hoy.setHours(23, 59, 59, 999);
+        const hace7Dias = new Date();
+        hace7Dias.setDate(hoy.getDate() - 7);
+        hace7Dias.setHours(0, 0, 0, 0);
+
+        const ultimos7Dias = datos.filter(d => {
+            const f = parseFechaISO(d.fecha);
+            return f >= hace7Dias && f <= hoy;
+        });
+
+        const totalMetros = ultimos7Dias.reduce((acc, curr) => acc + Number(curr.metros), 0);
+        const sesiones = ultimos7Dias.length;
+        const promedio = sesiones > 0 ? Math.round(totalMetros / sesiones) : 0;
+
+        document.getElementById('totalMetrosSemana').innerText = `${totalMetros.toLocaleString()} m`;
+        document.getElementById('sesionesSemana').innerText = `${sesiones}`;
+        document.getElementById('promedioSemana').innerText = `${promedio.toLocaleString()} m`;
+
+        if (datos.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color: var(--muted);">No hay volumen diario registrado.</p>';
+            return;
+        }
+
+        // AGRUPAMIENTO MENSUAL
+        const porMes = {};
+        datos.forEach(item => {
+            const fechaObj = parseFechaISO(item.fecha);
+            const claveMes = `${fechaObj.getFullYear()}-${String(fechaObj.getMonth() + 1).padStart(2, '0')}`;
+            const nombreMes = fechaObj.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' });
+            
+            if (!porMes[claveMes]) {
+                porMes[claveMes] = { nombre: nombreMes, items: [], totalMetros: 0 };
+            }
+            porMes[claveMes].items.push(item);
+            porMes[claveMes].totalMetros += Number(item.metros);
+        });
+
+        let primerMes = true;
+        Object.keys(porMes).sort().reverse().forEach(clave => {
+            const grupo = porMes[clave];
+            let htmlCards = '';
+
+            grupo.items.forEach(item => {
+                htmlCards += `
+                    <div class="item-card">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span style="color:var(--muted); font-size:12px;">📅 ${item.fecha}</span>
+                                <strong style="color:var(--accent-green); font-size:18px;">${Number(item.metros).toLocaleString()} m</strong>
+                            </div>
+                            <div style="margin-top:6px; font-size:13px; color:var(--text);">${item.obs}</div>
+                        </div>
+                        <div style="display:flex; justify-content:flex-end; margin-top:8px;">
+                            <button class="btn-danger" onclick="eliminarVolumen(${item.id})">🗑️ Borrar</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML += `
+                <details class="month-group" ${primerMes ? 'open' : ''}>
+                    <summary>
+                        <span style="text-transform: capitalize;">📅 ${grupo.nombre} (${grupo.items.length} sesiones)</span>
+                        <span style="color:var(--accent-green);">Total: ${grupo.totalMetros.toLocaleString()} m</span>
+                    </summary>
+                    <div class="multi-column-grid" style="margin-top: 10px;">
+                        ${htmlCards}
+                    </div>
+                </details>
+            `;
+            primerMes = false;
+        });
+    }
+
+    function eliminarVolumen(id) {
+        if (confirm("¿Eliminar este registro de volumen?")) {
+            setVolumenDatos(getVolumenDatos().filter(v => v.id !== id));
+            renderizarVolumenDiario();
+        }
+    }
+
+    function guardarEvaluacion() {
+        const fecha = document.getElementById('evalFecha').value;
+        const prueba = document.getElementById('evalPrueba').value || 'Test Control';
+        const metros = parseInt(document.getElementById('evalMetros').value) || 0;
+        const pileta = document.getElementById('evalPileta').value;
+        const min = parseInt(document.getElementById('evalMin').value) || 0;
+        const seg = parseInt(document.getElementById('evalSeg').value) || 0;
+        const cs = parseInt(document.getElementById('evalCs').value) || 0;
+
+        const totalSeg = (min * 60) + seg + (cs / 100);
+
+        if (totalSeg <= 0 || !fecha) {
+            alert("Ingresá un tiempo y fecha válidos para la evaluación.");
+            return;
+        }
+
+        let evals = getEvalDatos();
+        evals.push({ id: Date.now(), fecha, prueba, metros, pileta, min, seg, cs, totalSeg });
+        setEvalDatos(evals);
+
+        document.getElementById('evalMin').value = '0';
+        document.getElementById('evalSeg').value = '0';
+        document.getElementById('evalCs').value = '0';
+
+        renderizarEvaluaciones();
+        actualizarSelectoresEvalChart();
+        actualizarGraficoEvaluaciones();
+    }
+
+    function renderizarEvaluaciones() {
+        const datos = getEvalDatos().sort((a,b) => parseFechaISO(b.fecha) - parseFechaISO(a.fecha));
+        const container = document.getElementById('gridEvalHistorial');
+        container.innerHTML = '';
+
+        if (datos.length === 0) {
+            container.innerHTML = '<p style="text-align:center; grid-column: 1/-1; color: var(--muted);">No hay evaluaciones registradas.</p>';
+            return;
+        }
+
+        datos.forEach(item => {
+            container.innerHTML += `
+                <div class="item-card">
+                    <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="color:var(--muted); font-size:12px;">📅 ${item.fecha} (${item.pileta})</span>
+                            <strong style="color:var(--accent-purple); font-size:14px;">${item.prueba}</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                            <span>${item.metros ? item.metros + 'm' : ''}</span>
+                            <strong style="font-size:18px; color:var(--text);">${formatTiempo(item.min, item.seg, item.cs)}</strong>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; margin-top:8px;">
+                        <button class="btn-danger" onclick="eliminarEvaluacion(${item.id})">🗑️ Borrar</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function eliminarEvaluacion(id) {
+        if (confirm("¿Eliminar evaluación?")) {
+            setEvalDatos(getEvalDatos().filter(e => e.id !== id));
+            renderizarEvaluaciones();
+            actualizarSelectoresEvalChart();
+            actualizarGraficoEvaluaciones();
+        }
+    }
+
+    function actualizarSelectoresEvalChart() {
+        const datos = getEvalDatos();
+        const select = document.getElementById('filtroEvalChart');
+        select.innerHTML = '';
+
+        const pruebas = [...new Set(datos.map(d => d.prueba))];
+        if (pruebas.length === 0) {
+            select.innerHTML = '<option>Sin evaluaciones</option>';
+            return;
+        }
+
+        pruebas.forEach(p => select.innerHTML += `<option value="${p}">${p}</option>`);
+    }
+
+    function actualizarGraficoEvaluaciones() {
+        const pruebaSeleccionada = document.getElementById('filtroEvalChart').value;
+        const filtrados = getEvalDatos().filter(d => d.prueba === pruebaSeleccionada)
+                                         .sort((a,b) => parseFechaISO(a.fecha) - parseFechaISO(b.fecha));
+
+        const ctx = document.getElementById('evalChart').getContext('2d');
+        if (evalChart) evalChart.destroy();
+
+        if (filtrados.length === 0) return;
+
+        evalChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: filtrados.map(f => `${f.fecha} (${f.pileta})`),
+                datasets: [{
+                    label: `Evolución de Evaluación: ${pruebaSeleccionada}`,
+                    data: filtrados.map(f => f.totalSeg),
+                    borderColor: '#c084fc',
+                    backgroundColor: 'rgba(192, 132, 252, 0.2)',
+                    fill: true,
+                    tension: 0.2,
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { grid: { color: '#334155' }, ticks: { color: '#f8fafc' }, title: { display: true, text: 'Segundos', color: '#94a3b8' } },
+                    x: { grid: { color: '#334155' }, ticks: { color: '#f8fafc' } }
+                }
+            }
+        });
+    }
+
+    function formatTiempo(min, seg, cs) {
+        const m = min > 0 ? `${min}:` : '';
+        const s = seg < 10 ? `0${seg}` : `${seg}`;
+        const c = cs < 10 ? `0${cs}` : `${cs}`;
+        return `${m}${s}.${c}`;
+    }
+
+    function formatSegundosAFormato(totalSeg) {
+        const m = Math.floor(totalSeg / 60);
+        const s = Math.floor(totalSeg % 60);
+        const c = Math.round((totalSeg % 1) * 100);
+        return formatTiempo(m, s, c);
+    }
+
+    function evaluarMarca(estilo, distancia, categoriaUsuario, tiempoSeg) {
+        const clave = `${estilo}_${distancia}`;
+        const marcasPrueba = MARCAS_DAMAS[clave];
+
+        if (!marcasPrueba) return { lograda: false, idxAlcanzado: -1, html: `<span class="badge" style="background:#64748b; color:white;">Sin referencia</span>` };
+
+        let catMaximaAlcanzada = null;
+        for (let cat of ORDEN_CAT) {
+            if (marcasPrueba[cat] && tiempoSeg <= marcasPrueba[cat]) {
+                catMaximaAlcanzada = cat;
+            }
+        }
+
+        const idxUsuario = ORDEN_CAT.indexOf(categoriaUsuario);
+        const idxAlcanzada = catMaximaAlcanzada ? ORDEN_CAT.indexOf(catMaximaAlcanzada) : -1;
+
+        if (idxAlcanzada >= 0) {
+            const catActualExito = idxAlcanzada > idxUsuario ? catMaximaAlcanzada : categoriaUsuario;
+            const idxBase = ORDEN_CAT.indexOf(catActualExito);
+            
+            let siguienteCat = null;
+            for (let i = idxBase + 1; i < ORDEN_CAT.length; i++) {
+                if (marcasPrueba[ORDEN_CAT[i]]) {
+                    siguienteCat = ORDEN_CAT[i];
+                    break;
+                }
+            }
+
+            let textoSiguiente = "";
+            if (siguienteCat) {
+                const difSeg = (tiempoSeg - marcasPrueba[siguienteCat]).toFixed(2);
+                textoSiguiente = `<br><small style="font-weight:normal;">(a +${difSeg}s de ${NOMBRES_CAT[siguienteCat]})</small>`;
+            } else {
+                textoSiguiente = `<br><small style="font-weight:normal;">(¡Marca máxima de Mayores!)</small>`;
+            }
+
+            if (idxAlcanzada > idxUsuario) {
+                return { lograda: true, idxAlcanzado: idxAlcanzada, html: `<span class="badge badge-gold">🏆 MARCA SUPERIOR: ${NOMBRES_CAT[catMaximaAlcanzada]} ${textoSiguiente}</span>` };
+            } else {
+                return { lograda: true, idxAlcanzado: idxAlcanzada, html: `<span class="badge badge-green">🟢 Marca ${NOMBRES_CAT[categoriaUsuario]} Lograda ${textoSiguiente}</span>` };
+            }
+        } else {
+            const marcaUsuario = marcasPrueba[categoriaUsuario];
+            if (marcaUsuario) {
+                const diff = (tiempoSeg - marcaUsuario).toFixed(2);
+                return { lograda: false, idxAlcanzado: -1, html: `<span class="badge badge-red">🔴 Falta +${diff}s para ${NOMBRES_CAT[categoriaUsuario]}</span>` };
+            } else {
+                return { lograda: false, idxAlcanzado: -1, html: `<span class="badge" style="background:#64748b; color:white;">Sin marca en ${NOMBRES_CAT[categoriaUsuario]}</span>` };
+            }
+        }
+    }
+
+    function renderizarGridMarcasAlcanzadas() {
+        const datos = getDatos();
+        const container = document.getElementById('gridMarcasAlcanzadas');
+        container.innerHTML = '';
+
+        if (datos.length === 0) {
+            container.innerHTML = '<p style="text-align:center; grid-column: 1/-1; color: var(--muted);">No hay registros cargados aún.</p>';
+            return;
+        }
+
+        const mejoresPorPrueba = {};
+        datos.forEach(item => {
+            const clavePrueba = `${item.distancia}m ${item.estilo}`;
+            if (!mejoresPorPrueba[clavePrueba] || item.totalSeg < mejoresPorPrueba[clavePrueba].totalSeg) {
+                mejoresPorPrueba[clavePrueba] = item;
+            }
+        });
+
+        let alcanzadas = [];
+        Object.keys(mejoresPorPrueba).forEach(clave => {
+            const item = mejoresPorPrueba[clave];
+            const evalResult = evaluarMarca(item.estilo, item.distancia, item.categoria, item.totalSeg);
+            if (evalResult.lograda) {
+                alcanzadas.push({ ...item, evalResult });
+            }
+        });
+
+        if (alcanzadas.length === 0) {
+            container.innerHTML = '<p style="text-align:center; grid-column: 1/-1; color: var(--muted);">Aún no se ha alcanzado ninguna marca mínima en las pruebas.</p>';
+            return;
+        }
+
+        alcanzadas.sort((a, b) => b.evalResult.idxAlcanzado - a.evalResult.idxAlcanzado);
+
+        alcanzadas.forEach(item => {
+            container.innerHTML += `
+                <div class="item-card">
+                    <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+                            <strong style="color:var(--accent); font-size:16px;">${item.distancia}m ${item.estilo}</strong>
+                            <small style="color:var(--muted);">${item.pileta}</small>
+                        </div>
+                        <div style="font-size: 20px; font-weight: bold; color: var(--accent-green); margin-bottom: 8px;">
+                            ${formatSegundosAFormato(item.totalSeg)}
+                        </div>
+                        <div>${item.evalResult.html}</div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function renderizarGridHistorial() {
+        const datos = getDatos();
+        const container = document.getElementById('gridHistorial');
+        container.innerHTML = '';
+
+        if (datos.length === 0) {
+            container.innerHTML = '<p style="text-align:center; grid-column: 1/-1; color: var(--muted);">No hay tiempos en el historial.</p>';
+            return;
+        }
+
+        datos.sort((a,b) => parseFechaISO(b.fecha) - parseFechaISO(a.fecha));
+
+        datos.forEach(item => {
+            const evalResult = evaluarMarca(item.estilo, item.distancia, item.categoria, item.totalSeg);
+            container.innerHTML += `
+                <div class="item-card">
+                    <div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
+                            <span style="color:var(--muted); font-size:12px;">📅 ${item.fecha}</span>
+                            <span style="color:var(--accent-orange); font-size:12px; font-weight:bold;">${item.torneo}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+                            <strong style="font-size:15px;">${item.distancia}m ${item.estilo} (${item.pileta})</strong>
+                            <span style="font-size:16px; font-weight:bold; color:var(--text);">${formatTiempo(item.min, item.seg, item.cs)}</span>
+                        </div>
+                        <div style="margin-bottom: 8px;"><small>Cat: ${NOMBRES_CAT[item.categoria]}</small></div>
+                        <div>${evalResult.html}</div>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:10px; border-top:1px solid var(--border); padding-top:6px;">
+                        <button class="btn-edit" onclick="editar('${item.id}')">✏️ Editar</button>
+                        <button class="btn-danger" onclick="eliminar('${item.id}')">🗑️ Borrar</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function editar(id) {
+        const item = getDatos().find(d => d.id == id);
+        if (!item) return;
+
+        document.getElementById('editId').value = item.id;
+        document.getElementById('fecha').value = item.fecha;
+        document.getElementById('torneo').value = item.torneo;
+        document.getElementById('categoria').value = item.categoria;
+        document.getElementById('estilo').value = item.estilo;
+        document.getElementById('distancia').value = item.distancia;
+        document.getElementById('pileta').value = item.pileta;
+        document.getElementById('minutos').value = item.min;
+        document.getElementById('segundos').value = item.seg;
+        document.getElementById('centesimas').value = item.cs;
+
+        document.getElementById('formTitle').innerText = 'Editar Tiempo de Competencia';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function eliminar(id) {
+        if (confirm("¿Eliminar registro?")) {
+            setDatos(getDatos().filter(d => d.id != id));
+            renderizarGridHistorial();
+            renderizarGridMarcasAlcanzadas();
+            actualizarSelectoresChart();
+            actualizarGrafico();
+        }
+    }
+
+    function actualizarSelectoresChart() {
+        const datos = getDatos();
+        const select = document.getElementById('filtroPruebaChart');
+        select.innerHTML = '';
+
+        const pruebas = [...new Set(datos.map(d => `${d.distancia}m ${d.estilo}`))];
+        if (pruebas.length === 0) {
+            select.innerHTML = '<option>Sin datos suficientes</option>';
+            return;
+        }
+
+        pruebas.forEach(p => select.innerHTML += `<option value="${p}">${p}</option>`);
+    }
+
+    function actualizarGrafico() {
+        const prueba = document.getElementById('filtroPruebaChart').value;
+        const filtroPileta = document.getElementById('filtroPiletaChart').value;
+
+        const filtrados = getDatos().filter(d => {
+            const coincidePrueba = `${d.distancia}m ${d.estilo}` === prueba;
+            const coincidePileta = filtroPileta === "TODAS" || d.pileta === filtroPileta;
+            return coincidePrueba && coincidePileta;
+        }).sort((a,b) => parseFechaISO(a.fecha) - parseFechaISO(b.fecha));
+
+        const ctx = document.getElementById('timeChart').getContext('2d');
+        if (myChart) myChart.destroy();
+
+        if (filtrados.length === 0) {
+            document.getElementById('proyeccionBox').innerText = '💡 No hay registros para la combinación seleccionada.';
+            return;
+        }
+
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: filtrados.map(f => `${f.fecha} (${f.pileta})`),
+                datasets: [{
+                    label: `Evolución ${prueba} - ${filtroPileta === 'TODAS' ? 'Todas las piletas' : filtroPileta}`,
+                    data: filtrados.map(f => f.totalSeg),
+                    borderColor: '#38bdf8',
+                    backgroundColor: 'rgba(56, 189, 248, 0.2)',
+                    fill: true,
+                    tension: 0.2,
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { grid: { color: '#334155' }, ticks: { color: '#f8fafc' }, title: { display: true, text: 'Segundos', color: '#94a3b8' } },
+                    x: { grid: { color: '#334155' }, ticks: { color: '#f8fafc' } }
+                }
+            }
+        });
+
+        if (filtrados.length >= 2) {
+            const n = filtrados.length;
+            let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+            const tiempos = filtrados.map(f => f.totalSeg);
+            for (let i = 0; i < n; i++) {
+                sumX += i;
+                sumY += tiempos[i];
+                sumXY += i * tiempos[i];
+                sumXX += i * i;
+            }
+            const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+            const proximoTiempoSeg = tiempos[n - 1] + slope;
+
+            document.getElementById('proyeccionBox').innerText = 
+                `🚀 Proyección para tu próxima prueba de ${prueba} (${filtroPileta}): ${formatSegundosAFormato(proximoTiempoSeg)}`;
+        } else {
+            document.getElementById('proyeccionBox').innerText = '💡 Carga al menos 2 registros en esta pileta para ver la proyección.';
+        }
+    }
+
+    function cargarImagenRecordatorio(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const base64Img = event.target.result;
+            localStorage.setItem('swim_reminder_img', base64Img);
+            mostrarImagenGuardada();
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function mostrarImagenGuardada() {
+        const imgData = localStorage.getItem('swim_reminder_img');
+        const container = document.getElementById('contenedorImagen');
+        if (imgData) {
+            container.innerHTML = `<img src="${imgData}" class="img-reminder" alt="Tabla de Marcas Mínimas">`;
+        } else {
+            container.innerHTML = `<p style="color: var(--muted);">No se ha subido imagen de recordatorio aún.</p>`;
+        }
+    }
+
+    function exportarDatos() {
+        const payload = {
+            competencias: getDatos(),
+            volumenes: getVolumenDatos(),
+            evaluaciones: getEvalDatos()
+        };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload));
+        const a = document.createElement('a');
+        a.href = dataStr;
+        a.download = `backup_natacion_completo_${new Date().toISOString().slice(0,10)}.json`;
+        a.click();
+    }
+
+    function importarDatos(e) {
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            try {
+                const datos = JSON.parse(evt.target.result);
+                if (datos.competencias || Array.isArray(datos)) {
+                    const comp = Array.isArray(datos) ? datos : datos.competencias || [];
+                    setDatos(comp);
+                    if (datos.volumenes) setVolumenDatos(datos.volumenes);
+                    if (datos.evaluaciones) setEvalDatos(datos.evaluaciones);
+
+                    renderizarGridHistorial();
+                    renderizarGridMarcasAlcanzadas();
+                    actualizarSelectoresChart();
+                    actualizarGrafico();
+                    renderizarVolumenDiario();
+                    renderizarEvaluaciones();
+                    actualizarSelectoresEvalChart();
+                    actualizarGraficoEvaluaciones();
+                    alert("¡Datos importados con éxito!");
+                }
+            } catch (err) { alert("Archivo no válido."); }
+        };
+        reader.readAsText(e.target.files[0]);
+    }
+
+    function descargarInformePDF() {
+        const datos = getDatos();
+        const volumenes = getVolumenDatos();
+        const evaluaciones = getEvalDatos();
+
+        if (datos.length === 0 && volumenes.length === 0 && evaluaciones.length === 0) {
+            alert("No hay registros cargados para exportar a PDF.");
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        doc.setFontSize(18);
+        doc.setTextColor(15, 23, 42);
+        doc.text("Informe General de Rendimiento y Entrenamiento", 14, 20);
+
+        doc.setFontSize(10);
+        doc.setTextColor(100);
+        doc.text(`Fecha de emisión: ${new Date().toLocaleDateString('es-AR')}`, 14, 27);
+
+        doc.setFontSize(14);
+        doc.setTextColor(2, 132, 199);
+        doc.text("1. Marcas Mínimas Alcanzadas (Competencias)", 14, 38);
+
+        const mejoresPorPrueba = {};
+        datos.forEach(item => {
+            const clavePrueba = `${item.distancia}m ${item.estilo}`;
+            if (!mejoresPorPrueba[clavePrueba] || item.totalSeg < mejoresPorPrueba[clavePrueba].totalSeg) {
+                mejoresPorPrueba[clavePrueba] = item;
+            }
+        });
+
+        let alcanzadas = [];
+        Object.keys(mejoresPorPrueba).forEach(clave => {
+            const item = mejoresPorPrueba[clave];
+            const evalResult = evaluarMarca(item.estilo, item.distancia, item.categoria, item.totalSeg);
+            if (evalResult.lograda) {
+                alcanzadas.push([
+                    `${item.distancia}m ${item.estilo}`,
+                    item.pileta,
+                    formatSegundosAFormato(item.totalSeg),
+                    NOMBRES_CAT[ORDEN_CAT[evalResult.idxAlcanzado]] || NOMBRES_CAT[item.categoria]
+                ]);
+            }
+        });
+
+        if (alcanzadas.length > 0) {
+            doc.autoTable({
+                startY: 42,
+                head: [['Prueba', 'Pileta', 'Mejor Tiempo (PB)', 'Categoría Alcanzada']],
+                body: alcanzadas,
+                theme: 'striped',
+                headStyles: { fillColor: [56, 189, 248] }
+            });
+        } else {
+            doc.setFontSize(10);
+            doc.text("Aún no hay marcas mínimas clasificadas.", 14, 45);
+        }
+
+        let lastY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 12 : 55;
+        doc.setFontSize(14);
+        doc.setTextColor(192, 132, 252);
+        doc.text("2. Evaluaciones de Trabajo (Tests Control)", 14, lastY);
+
+        const evalFilas = evaluaciones.map(e => [
+            e.fecha,
+            e.prueba,
+            e.metros ? `${e.metros}m` : '-',
+            e.pileta,
+            formatTiempo(e.min, e.seg, e.cs)
+        ]);
+
+        if (evalFilas.length > 0) {
+            doc.autoTable({
+                startY: lastY + 4,
+                head: [['Fecha', 'Prueba / Test', 'Distancia', 'Pileta', 'Tiempo']],
+                body: evalFilas,
+                theme: 'grid',
+                headStyles: { fillColor: [192, 132, 252] }
+            });
+        } else {
+            doc.setFontSize(10);
+            doc.text("No hay evaluaciones registradas.", 14, lastY + 6);
+        }
+
+        lastY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 12 : lastY + 15;
+        doc.setFontSize(14);
+        doc.setTextColor(52, 211, 153);
+        doc.text("3. Últimos Registros de Volumen Diario (Metros)", 14, lastY);
+
+        const volFilas = volumenes.slice(0, 10).map(v => [v.fecha, `${v.metros} m`, v.obs]);
+
+        if (volFilas.length > 0) {
+            doc.autoTable({
+                startY: lastY + 4,
+                head: [['Fecha', 'Volumen (m)', 'Observaciones']],
+                body: volFilas,
+                theme: 'grid',
+                headStyles: { fillColor: [52, 211, 153] }
+            });
+        } else {
+            doc.setFontSize(10);
+            doc.text("No hay registros de volumen diario.", 14, lastY + 6);
+        }
+
+        doc.save(`informe_completo_natacion_${new Date().toISOString().slice(0,10)}.pdf`);
+    }
+</script>
+
+</body>
+</html>
