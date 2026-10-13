@@ -52,6 +52,7 @@
             margin-bottom: 24px;
             border-bottom: 2px solid var(--border);
             padding-bottom: 12px;
+            flex-wrap: wrap;
         }
 
         .tab-button {
@@ -59,7 +60,7 @@
             color: var(--muted);
             border: 2px solid var(--border);
             padding: 12px 24px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             border-radius: 10px;
             cursor: pointer;
@@ -86,6 +87,13 @@
             box-shadow: 0 0 12px rgba(192, 132, 252, 0.4);
         }
 
+        .tab-button.active-admin {
+            background-color: #d97706;
+            color: #ffffff;
+            border-color: var(--accent-orange);
+            box-shadow: 0 0 12px rgba(251, 146, 60, 0.4);
+        }
+
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
@@ -100,6 +108,7 @@
 
         .card-comp { border-top: 4px solid var(--accent); }
         .card-entreno { border-top: 4px solid var(--accent-purple); }
+        .card-admin { border-top: 4px solid var(--accent-orange); }
 
         .top-grid {
             display: grid;
@@ -179,6 +188,7 @@
 
         button:hover { opacity: 0.9; }
         .btn-purple { background-color: var(--accent-purple); color: #0f172a; }
+        .btn-orange { background-color: var(--accent-orange); color: #0f172a; }
 
         .btn-small {
             padding: 6px 12px;
@@ -196,9 +206,9 @@
         .btn-danger {
             background-color: var(--danger);
             color: white;
-            padding: 4px 8px;
+            padding: 8px 12px;
             width: auto;
-            font-size: 12px;
+            font-size: 13px;
         }
 
         .btn-edit {
@@ -331,17 +341,18 @@
     <div class="backup-bar">
         <span style="font-size: 14px; color: var(--muted); font-weight: bold;">☁️ Respaldo y Reportes:</span>
         <div style="display:flex; gap:8px;">
-            <button class="btn-small btn-sync" onclick="exportarDatos()">📥 Exportar Datos (JSON)</button>
+            <button class="btn-small btn-sync" onclick="exportarDatos()">📥 Exportar JSON</button>
             <input type="file" id="importFile" style="display:none;" onchange="importarDatos(event)">
-            <button class="btn-small btn-import" onclick="document.getElementById('importFile').click()">📤 Importar Datos</button>
-            <button class="btn-small btn-pdf" onclick="descargarInformePDF()">📄 Exportar Informe PDF</button>
+            <button class="btn-small btn-import" onclick="document.getElementById('importFile').click()">📤 Importar JSON</button>
+            <button class="btn-small btn-pdf" onclick="descargarInformePDF()">📄 Informe PDF</button>
         </div>
     </div>
 
     <!-- PESTAÑAS PRINCIPALES -->
     <div class="tabs-container">
-        <button id="btnTabComp" class="tab-button active-comp" onclick="cambiarTab('competencia')">🏆 MÓDULO COMPETENCIA</button>
-        <button id="btnTabEntreno" class="tab-button" onclick="cambiarTab('entrenamiento')">💪 MÓDULO ENTRENAMIENTO</button>
+        <button id="btnTabComp" class="tab-button active-comp" onclick="cambiarTab('competencia')">🏆 COMPETENCIA</button>
+        <button id="btnTabEntreno" class="tab-button" onclick="cambiarTab('entrenamiento')">💪 ENTRENAMIENTO</button>
+        <button id="btnTabAdmin" class="tab-button" onclick="cambiarTab('admin')">⚙️ ADMINISTRADOR</button>
     </div>
 
     <!-- MÓDULO COMPETENCIA -->
@@ -584,6 +595,57 @@
             <div id="gridEvalHistorial" class="multi-column-grid" style="margin-top: 15px;"></div>
         </div>
     </div>
+
+    <!-- MÓDULO ADMINISTRADOR -->
+    <div id="tabAdmin" class="tab-content">
+        <div class="card card-admin">
+            <h2 style="color: var(--accent-orange);">⚙️ Panel de Control y Administración General</h2>
+            <p style="text-align: center; color: var(--muted); font-size: 14px;">
+                Gestiona perfiles, respalda o restaura la base de datos completa y administra la información almacenada en el sistema.
+            </p>
+
+            <h3 style="color: var(--accent); margin-top: 25px;">👤 Perfil del Atleta / Natatorio</h3>
+            <div class="row">
+                <div class="col">
+                    <label>Nombre del Nadador/a</label>
+                    <input type="text" id="adminNombre" placeholder="Ej: Sofía Perez">
+                </div>
+                <div class="col">
+                    <label>Club / Equipo</label>
+                    <input type="text" id="adminClub" placeholder="Ej: Club Belgrano">
+                </div>
+            </div>
+            <button class="btn-orange" onclick="guardarPerfilAdmin()" style="margin-top: 5px;">Guardar Datos de Perfil</button>
+
+            <h3 style="color: var(--accent-green); margin-top: 30px;">📊 Estadísticas de Base de Datos</h3>
+            <div class="stats-summary">
+                <div>
+                    <small>Tiempos Competencia</small>
+                    <div class="stats-val" id="adminCountComp">0</div>
+                </div>
+                <div>
+                    <small>Registros Volumen</small>
+                    <div class="stats-val" id="adminCountVol">0</div>
+                </div>
+                <div>
+                    <small>Evaluaciones Test</small>
+                    <div class="stats-val" id="adminCountEval">0</div>
+                </div>
+            </div>
+
+            <h3 style="color: var(--danger); margin-top: 35px;">⚠️ Zona de Mantenimiento y Borrado</h3>
+            <div style="background: #0f172a; padding: 16px; border-radius: 8px; border: 1px solid var(--border);">
+                <p style="color: var(--muted); font-size: 13px; margin-top: 0;">
+                    Atención: Estas acciones afectan directamente los datos guardados en este navegador.
+                </p>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn-danger" onclick="borrarSoloModulo('competencia')">🗑️ Borrar Todo Competencias</button>
+                    <button class="btn-danger" onclick="borrarSoloModulo('entrenamiento')">🗑️ Borrar Todo Entrenamiento</button>
+                    <button class="btn-danger" style="background: #991b1b;" onclick="resetearSistemaCompleto()">🚨 Resetear Sistema Completo</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -640,24 +702,37 @@
         actualizarSelectoresEvalChart();
         actualizarGraficoEvaluaciones();
         analizarVariacionCompetencias();
+        cargarPerfilAdmin();
+        actualizarStatsAdmin();
     });
 
     function cambiarTab(tab) {
         const tabComp = document.getElementById('tabCompetencia');
         const tabEntreno = document.getElementById('tabEntrenamiento');
+        const tabAdmin = document.getElementById('tabAdmin');
+
         const btnComp = document.getElementById('btnTabComp');
         const btnEntreno = document.getElementById('btnTabEntreno');
+        const btnAdmin = document.getElementById('btnTabAdmin');
+
+        tabComp.classList.remove('active');
+        tabEntreno.classList.remove('active');
+        tabAdmin.classList.remove('active');
+
+        btnComp.className = 'tab-button';
+        btnEntreno.className = 'tab-button';
+        btnAdmin.className = 'tab-button';
 
         if (tab === 'competencia') {
             tabComp.classList.add('active');
-            tabEntreno.classList.remove('active');
             btnComp.className = 'tab-button active-comp';
-            btnEntreno.className = 'tab-button';
-        } else {
+        } else if (tab === 'entrenamiento') {
             tabEntreno.classList.add('active');
-            tabComp.classList.remove('active');
             btnEntreno.className = 'tab-button active-entreno';
-            btnComp.className = 'tab-button';
+        } else if (tab === 'admin') {
+            tabAdmin.classList.add('active');
+            btnAdmin.className = 'tab-button active-admin';
+            actualizarStatsAdmin();
         }
     }
 
@@ -711,6 +786,7 @@
         actualizarSelectoresChart();
         actualizarGrafico();
         analizarVariacionCompetencias();
+        actualizarStatsAdmin();
     }
 
     function limpiarFormulario() {
@@ -821,6 +897,7 @@
         document.getElementById('volObs').value = '';
 
         renderizarVolumenDiario();
+        actualizarStatsAdmin();
     }
 
     function renderizarVolumenDiario() {
@@ -881,7 +958,7 @@
                             <div style="margin-top:6px; font-size:13px; color:var(--text);">${item.obs}</div>
                         </div>
                         <div style="display:flex; justify-content:flex-end; margin-top:8px;">
-                            <button class="btn-danger" onclick="eliminarVolumen(${item.id})">🗑️ Borrar</button>
+                            <button class="btn-danger" style="padding:4px 8px; font-size:12px;" onclick="eliminarVolumen(${item.id})">🗑️ Borrar</button>
                         </div>
                     </div>
                 `;
@@ -906,6 +983,7 @@
         if (confirm("¿Eliminar este registro de volumen?")) {
             setVolumenDatos(getVolumenDatos().filter(v => v.id !== id));
             renderizarVolumenDiario();
+            actualizarStatsAdmin();
         }
     }
 
@@ -936,6 +1014,7 @@
         renderizarEvaluaciones();
         actualizarSelectoresEvalChart();
         actualizarGraficoEvaluaciones();
+        actualizarStatsAdmin();
     }
 
     function renderizarEvaluaciones() {
@@ -962,7 +1041,7 @@
                         </div>
                     </div>
                     <div style="display:flex; justify-content:flex-end; margin-top:8px;">
-                        <button class="btn-danger" onclick="eliminarEvaluacion(${item.id})">🗑️ Borrar</button>
+                        <button class="btn-danger" style="padding:4px 8px; font-size:12px;" onclick="eliminarEvaluacion(${item.id})">🗑️ Borrar</button>
                     </div>
                 </div>
             `;
@@ -975,6 +1054,7 @@
             renderizarEvaluaciones();
             actualizarSelectoresEvalChart();
             actualizarGraficoEvaluaciones();
+            actualizarStatsAdmin();
         }
     }
 
@@ -1176,7 +1256,7 @@
                     </div>
                     <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:10px; border-top:1px solid var(--border); padding-top:6px;">
                         <button class="btn-edit" onclick="editar('${item.id}')">✏️ Editar</button>
-                        <button class="btn-danger" onclick="eliminar('${item.id}')">🗑️ Borrar</button>
+                        <button class="btn-danger" style="padding:4px 8px; font-size:12px;" onclick="eliminar('${item.id}')">🗑️ Borrar</button>
                     </div>
                 </div>
             `;
@@ -1199,6 +1279,7 @@
         document.getElementById('centesimas').value = item.cs;
 
         document.getElementById('formTitle').innerText = 'Editar Tiempo de Competencia';
+        cambiarTab('competencia');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -1210,6 +1291,7 @@
             actualizarSelectoresChart();
             actualizarGrafico();
             analizarVariacionCompetencias();
+            actualizarStatsAdmin();
         }
     }
 
@@ -1313,11 +1395,65 @@
         }
     }
 
+    /* MÓDULO ADMINISTRADOR Y FUNCIONES AVANZADAS */
+    function cargarPerfilAdmin() {
+        const perfil = JSON.parse(localStorage.getItem('swim_profile_data')) || { nombre: '', club: '' };
+        document.getElementById('adminNombre').value = perfil.nombre || '';
+        document.getElementById('adminClub').value = perfil.club || '';
+    }
+
+    function guardarPerfilAdmin() {
+        const nombre = document.getElementById('adminNombre').value;
+        const club = document.getElementById('adminClub').value;
+        localStorage.setItem('swim_profile_data', JSON.stringify({ nombre, club }));
+        alert("¡Perfil guardado correctamente!");
+    }
+
+    function actualizarStatsAdmin() {
+        document.getElementById('adminCountComp').innerText = getDatos().length;
+        document.getElementById('adminCountVol').innerText = getVolumenDatos().length;
+        document.getElementById('adminCountEval').innerText = getEvalDatos().length;
+    }
+
+    function borrarSoloModulo(modulo) {
+        if (modulo === 'competencia') {
+            if (confirm("¿Confirmas borrar TODOS los tiempos de competencia?")) {
+                localStorage.removeItem('swim_damas_records');
+                renderizarGridHistorial();
+                renderizarGridMarcasAlcanzadas();
+                actualizarSelectoresChart();
+                actualizarGrafico();
+                analizarVariacionCompetencias();
+                actualizarStatsAdmin();
+            }
+        } else if (modulo === 'entrenamiento') {
+            if (confirm("¿Confirmas borrar TODOS los registros de entrenamiento y evaluaciones?")) {
+                localStorage.removeItem('swim_volumen_records');
+                localStorage.removeItem('swim_eval_records');
+                renderizarVolumenDiario();
+                renderizarEvaluaciones();
+                actualizarSelectoresEvalChart();
+                actualizarGraficoEvaluaciones();
+                actualizarStatsAdmin();
+            }
+        }
+    }
+
+    function resetearSistemaCompleto() {
+        const codigo = prompt("⚠️ ALERTA: Esto eliminará TODOS los datos cargados en la aplicación (Competencias, Entrenamientos, Evaluaciones, Perfil e Imagen).\n\nPara confirmar escribe 'BORRAR' en mayúsculas:");
+        if (codigo === 'BORRAR') {
+            localStorage.clear();
+            location.reload();
+        }
+    }
+
     function exportarDatos() {
         const payload = {
+            perfil: JSON.parse(localStorage.getItem('swim_profile_data')) || {},
             competencias: getDatos(),
             volumenes: getVolumenDatos(),
-            evaluaciones: getEvalDatos()
+            evaluaciones: getEvalDatos(),
+            imagenRecordatorio: localStorage.getItem('swim_reminder_img') || ''
         };
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload));
         const a = document.createElement('a');
@@ -1336,6 +1472,8 @@
                     setDatos(comp);
                     if (datos.volumenes) setVolumenDatos(datos.volumenes);
                     if (datos.evaluaciones) setEvalDatos(datos.evaluaciones);
+                    if (datos.perfil) localStorage.setItem('swim_profile_data', JSON.stringify(datos.perfil));
+                    if (datos.imagenRecordatorio) localStorage.setItem('swim_reminder_img', datos.imagenRecordatorio);
 
                     renderizarGridHistorial();
                     renderizarGridMarcasAlcanzadas();
@@ -1346,7 +1484,10 @@
                     actualizarSelectoresEvalChart();
                     actualizarGraficoEvaluaciones();
                     analizarVariacionCompetencias();
-                    alert("¡Datos importados con éxito!");
+                    cargarPerfilAdmin();
+                    mostrarImagenGuardada();
+                    actualizarStatsAdmin();
+                    alert("¡Datos e historial importados con éxito!");
                 }
             } catch (err) { alert("Archivo no válido."); }
         };
@@ -1357,6 +1498,7 @@
         const datos = getDatos();
         const volumenes = getVolumenDatos();
         const evaluaciones = getEvalDatos();
+        const perfil = JSON.parse(localStorage.getItem('swim_profile_data')) || { nombre: 'Atleta', club: 'Sin Club' };
 
         if (datos.length === 0 && volumenes.length === 0 && evaluaciones.length === 0) {
             alert("No hay registros cargados para exportar a PDF.");
@@ -1368,11 +1510,11 @@
 
         doc.setFontSize(18);
         doc.setTextColor(15, 23, 42);
-        doc.text("Informe General de Rendimiento y Entrenamiento", 14, 20);
+        doc.text(`Informe Deportivo: ${perfil.nombre || 'Atleta'}`, 14, 20);
 
         doc.setFontSize(10);
         doc.setTextColor(100);
-        doc.text(`Fecha de emisión: ${new Date().toLocaleDateString('es-AR')}`, 14, 27);
+        doc.text(`Club/Equipo: ${perfil.club || 'N/A'} | Fecha de emisión: ${new Date().toLocaleDateString('es-AR')}`, 14, 27);
 
         doc.setFontSize(14);
         doc.setTextColor(2, 132, 199);
