@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Swim Performance App Pro - Panel Deportivo</title>
+    <title>Swim Tracker Pro - Panel Deportivo</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
@@ -39,13 +39,12 @@
             margin: 0 auto;
         }
 
-        h1, h2 {
+        h1, h2, h3 {
             text-align: center;
             color: var(--accent);
             margin-bottom: 16px;
         }
 
-        /* SISTEMA DE PESTAÑAS (TABS) */
         .tabs-container {
             display: flex;
             justify-content: center;
@@ -87,15 +86,9 @@
             box-shadow: 0 0 12px rgba(192, 132, 252, 0.4);
         }
 
-        .tab-content {
-            display: none;
-        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
 
-        .tab-content.active {
-            display: block;
-        }
-
-        /* ESTILOS DE TARJETAS Y GRID */
         .card {
             background-color: var(--card);
             border-radius: 12px;
@@ -105,13 +98,8 @@
             box-sizing: border-box;
         }
 
-        .card-comp {
-            border-top: 4px solid var(--accent);
-        }
-
-        .card-entreno {
-            border-top: 4px solid var(--accent-purple);
-        }
+        .card-comp { border-top: 4px solid var(--accent); }
+        .card-entreno { border-top: 4px solid var(--accent-purple); }
 
         .top-grid {
             display: grid;
@@ -148,10 +136,7 @@
             flex-wrap: wrap;
         }
 
-        .col {
-            flex: 1;
-            min-width: 120px;
-        }
+        .col { flex: 1; min-width: 120px; }
 
         label {
             display: block;
@@ -177,9 +162,7 @@
             gap: 6px;
         }
 
-        .time-box input {
-            text-align: center;
-        }
+        .time-box input { text-align: center; }
 
         button {
             width: 100%;
@@ -195,15 +178,15 @@
         }
 
         button:hover { opacity: 0.9; }
-
         .btn-purple { background-color: var(--accent-purple); color: #0f172a; }
 
         .btn-small {
-            padding: 6px 10px;
-            font-size: 12px;
-            font-weight: normal;
+            padding: 6px 12px;
+            font-size: 13px;
+            font-weight: bold;
             border-radius: 6px;
             width: auto;
+            cursor: pointer;
         }
 
         .btn-sync { background-color: var(--accent-green); color: #0f172a; }
@@ -309,6 +292,34 @@
             font-weight: bold;
             color: var(--accent-green);
         }
+
+        .delta-card {
+            background-color: #0f172a;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .delta-mejora { border-left: 5px solid var(--accent-green); }
+        .delta-aumento { border-left: 5px solid var(--danger); }
+        .delta-neutro { border-left: 5px solid var(--muted); }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            background-color: #1e293b;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        @media (max-width: 600px) {
+            .comparison-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -316,11 +327,11 @@
 <div class="container">
     <h1>🏊‍♀️ Swim Tracker Pro - Panel Deportivo</h1>
 
-    <!-- BARRA GLOBAL DE DATOS Y EXPORTACIÓN -->
+    <!-- BARRA GLOBAL DE DATOS -->
     <div class="backup-bar">
-        <span style="font-size: 14px; color: var(--muted); font-weight: bold;">☁️ Gestión Global de Datos y Reportes:</span>
+        <span style="font-size: 14px; color: var(--muted); font-weight: bold;">☁️ Respaldo y Reportes:</span>
         <div style="display:flex; gap:8px;">
-            <button class="btn-small btn-sync" onclick="exportarDatos()">📥 Exportar Todo</button>
+            <button class="btn-small btn-sync" onclick="exportarDatos()">📥 Exportar Datos (JSON)</button>
             <input type="file" id="importFile" style="display:none;" onchange="importarDatos(event)">
             <button class="btn-small btn-import" onclick="document.getElementById('importFile').click()">📤 Importar Datos</button>
             <button class="btn-small btn-pdf" onclick="descargarInformePDF()">📄 Exportar Informe PDF</button>
@@ -333,13 +344,9 @@
         <button id="btnTabEntreno" class="tab-button" onclick="cambiarTab('entrenamiento')">💪 MÓDULO ENTRENAMIENTO</button>
     </div>
 
-    <!-- ========================================== -->
-    <!-- MÓDULO 1: COMPETENCIA                      -->
-    <!-- ========================================== -->
+    <!-- MÓDULO COMPETENCIA -->
     <div id="tabCompetencia" class="tab-content active">
-        
         <div class="top-grid">
-            <!-- CARGA DE TIEMPOS -->
             <div class="card card-comp">
                 <h2 id="formTitle">Cargar Nuevo Tiempo de Competencia</h2>
                 <input type="hidden" id="editId">
@@ -413,7 +420,6 @@
                 <button id="btnGuardar" onclick="guardarRegistro()" style="margin-top: 10px;">Guardar Tiempo</button>
             </div>
 
-            <!-- TABLA DE MARCAS MINIMAS RECORDATORIO -->
             <div class="card card-comp">
                 <details open>
                     <summary>📸 Tabla de Marcas Mínimas (Recordatorio)</summary>
@@ -423,7 +429,42 @@
             </div>
         </div>
 
-        <!-- GRAFICO Y PROYECCION -->
+        <div class="card card-comp">
+            <h2>⏱️ Analizador de Variación Directa entre Competencias</h2>
+            <div class="row">
+                <div class="col">
+                    <label>Estilo</label>
+                    <select id="compFiltroEstilo" onchange="analizarVariacionCompetencias()">
+                        <option value="LIBRE">Libre</option>
+                        <option value="ESPALDA">Espalda</option>
+                        <option value="PECHO">Pecho</option>
+                        <option value="MARIPOSA">Mariposa</option>
+                        <option value="MEDLEY">Medley / Combinado</option>
+                    </select>
+                </div>
+                <div class="col">
+                    <label>Distancia (m)</label>
+                    <select id="compFiltroDistancia" onchange="analizarVariacionCompetencias()">
+                        <option value="50">50m</option>
+                        <option value="100">100m</option>
+                        <option value="200">200m</option>
+                        <option value="400">400m</option>
+                        <option value="800">800m</option>
+                        <option value="1500">1500m</option>
+                    </select>
+                </div>
+                <div class="col">
+                    <label>Tipo de Pileta</label>
+                    <select id="compFiltroPileta" onchange="analizarVariacionCompetencias()">
+                        <option value="25m">25m (Pileta Corta)</option>
+                        <option value="50m">50m (Pileta Olímpica)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="contenedorResultadoVariacion" style="margin-top: 15px;"></div>
+        </div>
+
         <div class="card card-comp">
             <h2>📊 Comparativa y Proyecciones por Tipo de Pileta (Competencias)</h2>
             <div class="row">
@@ -446,26 +487,19 @@
             <div id="proyeccionBox" style="margin-top: 15px; text-align: center; font-weight: bold; color: var(--accent-green); font-size: 16px;"></div>
         </div>
 
-        <!-- MARCAS ALCANZADAS -->
         <div class="card card-comp">
             <h2>🏆 Marcas Alcanzadas (Mejor Marca por Prueba)</h2>
             <div id="gridMarcasAlcanzadas" class="multi-column-grid"></div>
         </div>
 
-        <!-- HISTORIAL DE COMPETENCIA -->
         <div class="card card-comp">
             <h2>📋 Historial Completo de Tiempos Cargados</h2>
             <div id="gridHistorial" class="multi-column-grid"></div>
         </div>
-
     </div>
 
-    <!-- ========================================== -->
-    <!-- MÓDULO 2: ENTRENAMIENTO                     -->
-    <!-- ========================================== -->
+    <!-- MÓDULO ENTRENAMIENTO -->
     <div id="tabEntrenamiento" class="tab-content">
-        
-        <!-- VOLUMEN DE TRABAJO DIARIO -->
         <div class="card card-entreno">
             <h2 style="color: var(--accent-purple);">🏊‍♂️ Cargar Volumen Total de Trabajo Diario</h2>
             <div class="row">
@@ -504,7 +538,6 @@
             <div id="contenedorVolumenMensual"></div>
         </div>
 
-        <!-- EVALUACIONES Y CONTROL -->
         <div class="card card-entreno">
             <h2 style="color: var(--accent-purple);">⏱️ Carga de Evaluación de Trabajo (Test de Control)</h2>
             <div class="row">
@@ -550,9 +583,7 @@
             </div>
             <div id="gridEvalHistorial" class="multi-column-grid" style="margin-top: 15px;"></div>
         </div>
-
     </div>
-
 </div>
 
 <script>
@@ -608,6 +639,7 @@
         renderizarEvaluaciones();
         actualizarSelectoresEvalChart();
         actualizarGraficoEvaluaciones();
+        analizarVariacionCompetencias();
     });
 
     function cambiarTab(tab) {
@@ -678,6 +710,7 @@
         renderizarGridMarcasAlcanzadas();
         actualizarSelectoresChart();
         actualizarGrafico();
+        analizarVariacionCompetencias();
     }
 
     function limpiarFormulario() {
@@ -685,6 +718,89 @@
         document.getElementById('segundos').value = '0';
         document.getElementById('centesimas').value = '0';
         document.getElementById('torneo').value = '';
+    }
+
+    function analizarVariacionCompetencias() {
+        const estilo = document.getElementById('compFiltroEstilo').value;
+        const distancia = document.getElementById('compFiltroDistancia').value;
+        const pileta = document.getElementById('compFiltroPileta').value;
+        const container = document.getElementById('contenedorResultadoVariacion');
+
+        const filtrados = getDatos().filter(d => 
+            d.estilo === estilo && d.distancia === distancia && d.pileta === pileta
+        ).sort((a,b) => parseFechaISO(a.fecha) - parseFechaISO(b.fecha));
+
+        if (filtrados.length === 0) {
+            container.innerHTML = `<p style="text-align:center; color: var(--muted);">No hay competencias cargadas para la combinación <strong>${distancia}m ${estilo} (${pileta})</strong>.</p>`;
+            return;
+        }
+
+        if (filtrados.length === 1) {
+            const unico = filtrados[0];
+            container.innerHTML = `
+                <div class="delta-card delta-neutro">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <strong style="color:var(--accent);">Único Registro Cargado: ${unico.distancia}m ${unico.estilo} (${unico.pileta})</strong>
+                        <span style="color:var(--accent-green); font-size:18px; font-weight:bold;">${formatSegundosAFormato(unico.totalSeg)}</span>
+                    </div>
+                    <div>🏆 <strong>Torneo:</strong> ${unico.torneo} <small style="color:var(--muted);">(📅 ${unico.fecha})</small></div>
+                    <div style="color:var(--muted); font-size:13px;">💡 Carga al menos otra competencia en esta misma prueba y pileta para ver el análisis de variación.</div>
+                </div>
+            `;
+            return;
+        }
+
+        const ultima = filtrados[filtrados.length - 1];
+        const anterior = filtrados[filtrados.length - 2];
+
+        const difSeg = (ultima.totalSeg - anterior.totalSeg).toFixed(2);
+        const porc = ((difSeg / anterior.totalSeg) * 100).toFixed(2);
+
+        let claseEstilo = 'delta-neutro';
+        let badgeHtml = '';
+        let mensajeExplicativo = '';
+
+        if (difSeg < 0) {
+            claseEstilo = 'delta-mejora';
+            badgeHtml = `<span class="badge badge-green">🚀 MEJORA: -${Math.abs(difSeg)}s (${Math.abs(porc)}% más rápido)</span>`;
+            mensajeExplicativo = `¡Excelente! Bajó el tiempo en comparación con el torneo anterior (<strong>${anterior.torneo}</strong>).`;
+        } else if (difSeg > 0) {
+            claseEstilo = 'delta-aumento';
+            badgeHtml = `<span class="badge badge-red">⚠️ AUMENTO: +${difSeg}s (+${porc}%)</span>`;
+            mensajeExplicativo = `El tiempo subió respecto a la competencia anterior (<strong>${anterior.torneo}</strong>).`;
+        } else {
+            badgeHtml = `<span class="badge" style="background:#64748b; color:white;">⚪ MISMO TIEMPO (0.00s)</span>`;
+            mensajeExplicativo = `Mantuvo exactamente el mismo tiempo registrado en el torneo anterior.`;
+        }
+
+        container.innerHTML = `
+            <div class="delta-card ${claseEstilo}">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                    <div>
+                        <strong style="font-size:17px; color:var(--text);">${distancia}m ${estilo} (${pileta})</strong>
+                        <div style="margin-top:4px;">${badgeHtml}</div>
+                    </div>
+                    <div style="font-size:14px; color:var(--text);">
+                        ${mensajeExplicativo}
+                    </div>
+                </div>
+
+                <div class="comparison-grid">
+                    <div>
+                        <span style="color:var(--accent-orange); font-size:12px; font-weight:bold; display:block;">COMPETENCIA ANTERIOR</span>
+                        <strong style="font-size:15px; color:var(--text);">${anterior.torneo}</strong>
+                        <div style="font-size:12px; color:var(--muted);">📅 ${anterior.fecha}</div>
+                        <div style="font-size:18px; font-weight:bold; color:var(--muted); margin-top:4px;">${formatSegundosAFormato(anterior.totalSeg)}</div>
+                    </div>
+                    <div>
+                        <span style="color:var(--accent-green); font-size:12px; font-weight:bold; display:block;">ÚLTIMA COMPETENCIA</span>
+                        <strong style="font-size:15px; color:var(--text);">${ultima.torneo}</strong>
+                        <div style="font-size:12px; color:var(--muted);">📅 ${ultima.fecha}</div>
+                        <div style="font-size:20px; font-weight:bold; color:var(--accent); margin-top:4px;">${formatSegundosAFormato(ultima.totalSeg)}</div>
+                    </div>
+                </div>
+            </div>
+        `;
     }
 
     function guardarVolumenDiario() {
@@ -712,7 +828,6 @@
         const container = document.getElementById('contenedorVolumenMensual');
         container.innerHTML = '';
 
-        // CÁLCULO RESUMEN SEMANAL (Últimos 7 días)
         const hoy = new Date();
         hoy.setHours(23, 59, 59, 999);
         const hace7Dias = new Date();
@@ -737,7 +852,6 @@
             return;
         }
 
-        // AGRUPAMIENTO MENSUAL
         const porMes = {};
         datos.forEach(item => {
             const fechaObj = parseFechaISO(item.fecha);
@@ -1095,6 +1209,7 @@
             renderizarGridMarcasAlcanzadas();
             actualizarSelectoresChart();
             actualizarGrafico();
+            analizarVariacionCompetencias();
         }
     }
 
@@ -1230,6 +1345,7 @@
                     renderizarEvaluaciones();
                     actualizarSelectoresEvalChart();
                     actualizarGraficoEvaluaciones();
+                    analizarVariacionCompetencias();
                     alert("¡Datos importados con éxito!");
                 }
             } catch (err) { alert("Archivo no válido."); }
