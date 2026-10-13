@@ -352,7 +352,7 @@
     <div class="tabs-container">
         <button id="btnTabComp" class="tab-button active-comp" onclick="cambiarTab('competencia')">🏆 COMPETENCIA</button>
         <button id="btnTabEntreno" class="tab-button" onclick="cambiarTab('entrenamiento')">💪 ENTRENAMIENTO</button>
-        <button id="btnTabAdmin" class="tab-button" onclick="cambiarTab('admin')">⚙️ ADMINISTRADOR</button>
+        <button id="btnTabAdmin" class="tab-button" onclick="cambiarTab('admin')">🔒 ADMINISTRADOR</button>
     </div>
 
     <!-- MÓDULO COMPETENCIA -->
@@ -596,7 +596,7 @@
         </div>
     </div>
 
-    <!-- MÓDULO ADMINISTRADOR -->
+    <!-- MÓDULO ADMINISTRADOR CON ACCESO POR CONTRASEÑA -->
     <div id="tabAdmin" class="tab-content">
         <div class="card card-admin">
             <h2 style="color: var(--accent-orange);">⚙️ Panel de Control y Administración General</h2>
@@ -616,6 +616,15 @@
                 </div>
             </div>
             <button class="btn-orange" onclick="guardarPerfilAdmin()" style="margin-top: 5px;">Guardar Datos de Perfil</button>
+
+            <h3 style="color: var(--accent-purple); margin-top: 30px;">🔑 Configuración de Seguridad</h3>
+            <div class="row">
+                <div class="col">
+                    <label>Nueva Contraseña para Administrador</label>
+                    <input type="password" id="adminNuevaClave" placeholder="Ingresa la nueva clave">
+                </div>
+            </div>
+            <button class="btn-purple" onclick="cambiarClaveAdmin()" style="margin-top: 5px;">Cambiar Contraseña Administrador</button>
 
             <h3 style="color: var(--accent-green); margin-top: 30px;">📊 Estadísticas de Base de Datos</h3>
             <div class="stats-summary">
@@ -684,6 +693,7 @@
 
     let myChart = null;
     let evalChart = null;
+    let adminAutenticado = false;
 
     document.addEventListener("DOMContentLoaded", () => {
         const hoy = new Date().toISOString().slice(0,10);
@@ -707,6 +717,17 @@
     });
 
     function cambiarTab(tab) {
+        if (tab === 'admin' && !adminAutenticado) {
+            const claveGuardada = localStorage.getItem('swim_admin_pass') || '1234';
+            const ingreso = prompt("🔒 Acceso Restringido.\nIngresa la contraseña de Administrador:");
+            
+            if (ingreso !== claveGuardada) {
+                alert("❌ Contraseña incorrecta.");
+                return;
+            }
+            adminAutenticado = true;
+        }
+
         const tabComp = document.getElementById('tabCompetencia');
         const tabEntreno = document.getElementById('tabEntrenamiento');
         const tabAdmin = document.getElementById('tabAdmin');
@@ -734,6 +755,17 @@
             btnAdmin.className = 'tab-button active-admin';
             actualizarStatsAdmin();
         }
+    }
+
+    function cambiarClaveAdmin() {
+        const nuevaClave = document.getElementById('adminNuevaClave').value;
+        if (!nuevaClave || nuevaClave.trim() === "") {
+            alert("Por favor ingresa una clave válida.");
+            return;
+        }
+        localStorage.setItem('swim_admin_pass', nuevaClave.trim());
+        document.getElementById('adminNuevaClave').value = '';
+        alert("¡Contraseña de Administrador actualizada con éxito!");
     }
 
     function getDatos() { return JSON.parse(localStorage.getItem('swim_damas_records')) || []; }
